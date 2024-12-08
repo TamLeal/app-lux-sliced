@@ -1,15 +1,3 @@
-/**
- * @fileoverview Projects
- *
- * @description
- * Componente principal que gerencia toda a aplicação de gerenciamento de projetos.
- * Atua como orquestrador, controlando o estado global e a navegação entre diferentes
- * visualizações do projeto.
- *
- * @dependencies
- * Diversos componentes e hooks customizados
- */
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Plus, Home } from 'lucide-react';
@@ -24,7 +12,7 @@ import EditProjectStatusForm from '@/components/forms/EditProjectStatusForm';
 import ProjectCard from '@/components/cards/ProjectCard';
 import MetricsCard from '@/components/cards/MetricsCard';
 import Timeline from '@/components/features/Timeline';
-import TimelineForm from '@/components/forms/TimelineForm';  // Ajuste o caminho conforme necessário
+import TimelineForm from '@/components/forms/TimelineForm';
 import Documents from '@/components/features/Documents';
 import Photos from '@/components/features/Photos';
 import Overview from '@/components/features/Overview';
@@ -37,7 +25,6 @@ import { TABS } from '@/utils/constants';
 import { calculateElapsedTime } from '@/utils/projectUtils';
 
 export default function Projects() {
-  // Estados principais
   const [projects, setProjects] = useState(() => {
     const savedProjects = localStorage.getItem('projects');
     return savedProjects ? JSON.parse(savedProjects) : [];
@@ -46,7 +33,7 @@ export default function Projects() {
   const [activeTab, setActiveTab] = useState(TABS.OVERVIEW);
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showEditProjectDetails, setShowEditProjectDetails] = useState(false);
-  const [showTimelineForm, setShowTimelineForm] = useState(false); // Para controlar a visibilidade do formulário de nova fase
+  const [showTimelineForm, setShowTimelineForm] = useState(false);
   const [newTimeline, setNewTimeline] = useState({
     phase: '',
     startDate: '',
@@ -56,9 +43,10 @@ export default function Projects() {
     tasks: [],
   });
 
-  // Estados de edição
-  const [editProject, setEditProject] = useState(null);
+  // Estado adicionado para editar o status do projeto
   const [editProjectStatus, setEditProjectStatus] = useState(null);
+
+  const [editProject, setEditProject] = useState(null);
   const [editProjectDetails, setEditProjectDetails] = useState({
     name: '',
     constructionType: '',
@@ -73,11 +61,9 @@ export default function Projects() {
     description: '',
   });
 
-  // Hooks customizados
   const { weatherData, forecastData, loading: weatherLoading, error: weatherError } = useWeather();
   const { progress, updateProgress } = useProjectProgress(selectedProject);
 
-  // Efeitos
   useEffect(() => {
     localStorage.setItem('projects', JSON.stringify(projects));
   }, [projects]);
@@ -107,7 +93,7 @@ export default function Projects() {
         project.id === selectedProject.id
           ? {
               ...project,
-              timeline: [...project.timeline, newPhase], // Adicionando a nova fase à timeline
+              timeline: [...project.timeline, newPhase],
             }
           : project
       )
@@ -189,7 +175,7 @@ export default function Projects() {
               project={project}
               onSelect={handleProjectSelect}
               onEdit={setEditProject}
-              onEditStatus={setEditProjectStatus}
+              onEditStatus={setEditProjectStatus}  // Passando a função de editar status
               onDelete={handleDeleteProject}
             />
           ))}
@@ -217,7 +203,7 @@ export default function Projects() {
           <Timeline
             phases={selectedProject.timeline}
             onUpdateProgress={updateProgress}
-            onAddPhase={showAddPhaseForm} // Passando a função para mostrar o formulário de nova fase
+            onAddPhase={showAddPhaseForm}  // Passando a função para mostrar o formulário de nova fase
           />
         );
       case TABS.DOCUMENTS:
@@ -245,7 +231,7 @@ export default function Projects() {
           Gerenciamento de Obras
         </h2>
         <Button
-          onClick={() => setShowProjectForm(true)}
+          onClick={() => setShowProjectForm(true)}  // Abrindo o formulário para nova obra
           className="bg-teal-500 hover:bg-teal-600 text-white"
         >
           <Plus className="h-5 w-5 mr-2" />
@@ -290,6 +276,15 @@ export default function Projects() {
 
       {renderContent()}
 
+      {showProjectForm && (
+        <ProjectForm
+          onSubmit={handleProjectSubmit}
+          onCancel={() => setShowProjectForm(false)}  // Fechar o formulário de nova obra
+          newProject={editProjectDetails}
+          setNewProject={setEditProjectDetails}
+        />
+      )}
+
       {showTimelineForm && (
         <TimelineForm
           onSubmit={handleTimelineSubmit}
@@ -298,8 +293,6 @@ export default function Projects() {
           setNewTimeline={setNewTimeline}
         />
       )}
-
-      {/* Restante dos formulários */}
     </div>
   );
 }
