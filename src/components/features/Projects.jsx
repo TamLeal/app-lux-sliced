@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Plus, Home } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 // Importação de componentes de formulário
 import ProjectForm from '@/components/forms/ProjectForm';
@@ -175,7 +175,7 @@ export default function Projects() {
               project={project}
               onSelect={handleProjectSelect}
               onEdit={setEditProject}
-              onEditStatus={setEditProjectStatus}  // Passando a função de editar status
+              onEditStatus={setEditProjectStatus}
               onDelete={handleDeleteProject}
             />
           ))}
@@ -203,7 +203,7 @@ export default function Projects() {
           <Timeline
             phases={selectedProject.timeline}
             onUpdateProgress={updateProgress}
-            onAddPhase={showAddPhaseForm}  // Passando a função para mostrar o formulário de nova fase
+            onAddPhase={showAddPhaseForm}
           />
         );
       case TABS.DOCUMENTS:
@@ -231,7 +231,7 @@ export default function Projects() {
           Gerenciamento de Obras
         </h2>
         <Button
-          onClick={() => setShowProjectForm(true)}  // Abrindo o formulário para nova obra
+          onClick={() => setShowProjectForm(true)}
           className="bg-teal-500 hover:bg-teal-600 text-white"
         >
           <Plus className="h-5 w-5 mr-2" />
@@ -279,7 +279,7 @@ export default function Projects() {
       {showProjectForm && (
         <ProjectForm
           onSubmit={handleProjectSubmit}
-          onCancel={() => setShowProjectForm(false)}  // Fechar o formulário de nova obra
+          onCancel={() => setShowProjectForm(false)}
           newProject={editProjectDetails}
           setNewProject={setEditProjectDetails}
         />
@@ -291,6 +291,23 @@ export default function Projects() {
           onCancel={() => setShowTimelineForm(false)}
           newTimeline={newTimeline}
           setNewTimeline={setNewTimeline}
+        />
+      )}
+
+      {showEditProjectDetails && (
+        <EditProjectDetailsForm
+          project={editProjectDetails}
+          setProject={setEditProjectDetails}
+          onSubmit={(e) => {
+            e.preventDefault();
+            setProjects((prevProjects) =>
+              prevProjects.map((p) =>
+                p.id === selectedProject.id ? { ...p, ...editProjectDetails } : p
+              )
+            );
+            setShowEditProjectDetails(false);
+          }}
+          onCancel={() => setShowEditProjectDetails(false)}
         />
       )}
     </div>
