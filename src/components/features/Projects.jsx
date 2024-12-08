@@ -10,7 +10,6 @@ import EditProjectStatusForm from '@/components/forms/EditProjectStatusForm';
 
 // Importação de componentes de visualização
 import ProjectCard from '@/components/cards/ProjectCard';
-import MetricsCard from '@/components/cards/MetricsCard';
 import Timeline from '@/components/features/Timeline';
 import TimelineForm from '@/components/forms/TimelineForm';
 import Documents from '@/components/features/Documents';
@@ -22,31 +21,24 @@ import WeatherLog from '@/components/features/WeatherLog';
 import useWeather from '@/hooks/useWeather';
 import useProjectProgress from '@/hooks/useProjectProgress';
 import { TABS } from '@/utils/constants';
-import { calculateElapsedTime } from '@/utils/projectUtils';
 
 export default function Projects() {
+  // Estados principais
   const [projects, setProjects] = useState(() => {
     const savedProjects = localStorage.getItem('projects');
     return savedProjects ? JSON.parse(savedProjects) : [];
   });
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeTab, setActiveTab] = useState(TABS.OVERVIEW);
+
+  // Estados de modais e formulários
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showEditProjectDetails, setShowEditProjectDetails] = useState(false);
   const [showTimelineForm, setShowTimelineForm] = useState(false);
-  const [newTimeline, setNewTimeline] = useState({
-    phase: '',
-    startDate: '',
-    endDate: '',
-    progress: 0,
-    milestones: [],
-    tasks: [],
-  });
-
-  // Estado adicionado para editar o status do projeto
+  const [editProject, setEditProject] = useState(null);
   const [editProjectStatus, setEditProjectStatus] = useState(null);
 
-  const [editProject, setEditProject] = useState(null);
+  // Estado do novo projeto e timeline
   const [editProjectDetails, setEditProjectDetails] = useState({
     name: '',
     constructionType: '',
@@ -57,13 +49,24 @@ export default function Projects() {
     totalArea: '',
     numberOfUnits: '',
     budget: '',
-    status: '',
+    status: 'planning',
     description: '',
   });
 
+  const [newTimeline, setNewTimeline] = useState({
+    phase: '',
+    startDate: '',
+    endDate: '',
+    progress: 0,
+    milestones: [],
+    tasks: [],
+  });
+
+  // Hooks
   const { weatherData, forecastData, loading: weatherLoading, error: weatherError } = useWeather();
   const { progress, updateProgress } = useProjectProgress(selectedProject);
 
+  // Efeitos
   useEffect(() => {
     localStorage.setItem('projects', JSON.stringify(projects));
   }, [projects]);
@@ -75,51 +78,7 @@ export default function Projects() {
     }
   }, [projects]);
 
-  // Função para adicionar nova fase
-  const handleTimelineSubmit = (e) => {
-    e.preventDefault();
-
-    const newPhase = {
-      phase: newTimeline.phase,
-      startDate: newTimeline.startDate,
-      endDate: newTimeline.endDate,
-      progress: 0,
-      milestones: [],
-      tasks: [],
-    };
-
-    setProjects((prevProjects) =>
-      prevProjects.map((project) =>
-        project.id === selectedProject.id
-          ? {
-              ...project,
-              timeline: [...project.timeline, newPhase],
-            }
-          : project
-      )
-    );
-
-    setSelectedProject((prev) => ({
-      ...prev,
-      timeline: [...prev.timeline, newPhase],
-    }));
-
-    setShowTimelineForm(false);
-    setNewTimeline({
-      phase: '',
-      startDate: '',
-      endDate: '',
-      progress: 0,
-      milestones: [],
-      tasks: [],
-    });
-  };
-
-  // Função para exibir o formulário de adicionar nova fase
-  const showAddPhaseForm = () => {
-    setShowTimelineForm(true);
-  };
-
+  // Handlers
   const handleProjectSelect = (project) => {
     setSelectedProject(project);
     setActiveTab(TABS.OVERVIEW);
@@ -135,6 +94,7 @@ export default function Projects() {
       photos: [],
       timeline: [],
       documents: [],
+      status: editProjectDetails.status || 'planning',
     };
 
     setProjects((prev) => [...prev, projectToAdd]);
@@ -149,8 +109,41 @@ export default function Projects() {
       totalArea: '',
       numberOfUnits: '',
       budget: '',
-      status: '',
+      status: 'planning',
       description: '',
+    });
+  };
+
+  const handleTimelineSubmit = (e) => {
+    e.preventDefault();
+    const newPhase = {
+      phase: newTimeline.phase,
+      startDate: newTimeline.startDate,
+      endDate: newTimeline.endDate,
+      progress: 0,
+      milestones: [],
+      tasks: [],
+    };
+
+    setProjects((prevProjects) =>
+      prevProjects.map((project) =>
+        project.id === selectedProject.id
+          ? {
+              ...project,
+              timeline: [...(project.timeline || []), newPhase],
+            }
+          : project
+      )
+    );
+
+    setShowTimelineForm(false);
+    setNewTimeline({
+      phase: '',
+      startDate: '',
+      endDate: '',
+      progress: 0,
+      milestones: [],
+      tasks: [],
     });
   };
 
@@ -174,7 +167,7 @@ export default function Projects() {
               key={project.id}
               project={project}
               onSelect={handleProjectSelect}
-              onEdit={setEditProject}
+              onEditName={setEditProject}
               onEditStatus={setEditProjectStatus}
               onDelete={handleDeleteProject}
             />
@@ -201,15 +194,15 @@ export default function Projects() {
       case TABS.TIMELINE:
         return (
           <Timeline
-            phases={selectedProject.timeline}
+            phases={selectedProject.timeline || []}
             onUpdateProgress={updateProgress}
-            onAddPhase={showAddPhaseForm}
+            onAddPhase={() => setShowTimelineForm(true)}
           />
         );
       case TABS.DOCUMENTS:
-        return <Documents documents={selectedProject.documents} />;
+        return <Documents documents={selectedProject.documents || []} />;
       case TABS.PHOTOS:
-        return <Photos photos={selectedProject.photos} />;
+        return <Photos photos={selectedProject.photos || []} />;
       case TABS.WEATHER:
         return (
           <WeatherLog
@@ -297,7 +290,6 @@ export default function Projects() {
       {showEditProjectDetails && (
         <EditProjectDetailsForm
           project={editProjectDetails}
-          setProject={setEditProjectDetails}
           onSubmit={(e) => {
             e.preventDefault();
             setProjects((prevProjects) =>
@@ -308,6 +300,36 @@ export default function Projects() {
             setShowEditProjectDetails(false);
           }}
           onCancel={() => setShowEditProjectDetails(false)}
+        />
+      )}
+
+      {editProject && (
+        <EditProjectNameForm
+          project={editProject}
+          onSubmit={(newName) => {
+            setProjects((prevProjects) =>
+              prevProjects.map((p) =>
+                p.id === editProject.id ? { ...p, name: newName } : p
+              )
+            );
+            setEditProject(null);
+          }}
+          onCancel={() => setEditProject(null)}
+        />
+      )}
+
+      {editProjectStatus && (
+        <EditProjectStatusForm
+          project={editProjectStatus}
+          onSubmit={(newStatus) => {
+            setProjects((prevProjects) =>
+              prevProjects.map((p) =>
+                p.id === editProjectStatus.id ? { ...p, status: newStatus } : p
+              )
+            );
+            setEditProjectStatus(null);
+          }}
+          onCancel={() => setEditProjectStatus(null)}
         />
       )}
     </div>

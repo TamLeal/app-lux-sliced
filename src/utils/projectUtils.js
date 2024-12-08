@@ -24,12 +24,12 @@ export const getStatusColor = (status) => {
 // Função para obter texto do status do projeto
 export const getStatusText = (status) => {
   const statusTextMap = {
-    planning: 'Planning',
-    in_progress: 'In Progress',
-    on_hold: 'On Hold',
-    completed: 'Completed',
+    'planning': 'Em Planejamento',
+    'in_progress': 'Em Andamento',
+    'on_hold': 'Pausado',
+    'completed': 'Concluído'
   };
-  return statusTextMap[status] || 'Unknown Status';
+  return statusTextMap[status || 'planning'];
 };
 
 // Função para calcular o tempo decorrido do projeto

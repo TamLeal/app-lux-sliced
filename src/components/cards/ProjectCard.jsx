@@ -1,27 +1,10 @@
-/**
- * @fileoverview ProjectCard
- *
- * @description
- * Card que exibe as informações resumidas de um projeto na listagem principal,
- * incluindo status, progresso e ações rápidas
- *
- * @dependencies
- * - @/components/ui/Card
- * - @/components/ui/Progress
- * - @/components/ui/Button
- * - lucide-react (ícones)
- *
- * @relatedFiles
- * - Projects.jsx (componente pai)
- * - projectUtils.js (funções auxiliares)
- */
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Progress } from '@/components/ui/Progress';
 import { Button } from '@/components/ui/Button';
 import { Edit, Building, Trash2, Home } from 'lucide-react';
-import { getStatusColor, getStatusText } from '@/utils/projectUtils';
+import { getStatusColor } from '@/utils/projectUtils';
+import { projectStatuses } from '@/utils/constants';
 
 function ProjectCard({
   project,
@@ -30,6 +13,11 @@ function ProjectCard({
   onEditStatus,
   onDelete,
 }) {
+  const getStatusLabel = (statusValue) => {
+    const status = projectStatuses.find(s => s.value === statusValue);
+    return status ? status.label : 'Em Planejamento';
+  };
+
   return (
     <Card className="bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardHeader>
@@ -74,7 +62,7 @@ function ProjectCard({
                   project.status
                 )}`}
               >
-                {getStatusText(project.status)}
+                {getStatusLabel(project.status)}
               </span>
             </div>
           </div>

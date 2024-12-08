@@ -1,22 +1,3 @@
-/**
- * @fileoverview Overview
- *
- * @description
- * Dashboard principal do projeto que exibe métricas, informações gerais
- * e resumo da timeline
- *
- * @dependencies
- * - @/components/ui/Card
- * - @/components/ui/Progress
- * - @/components/ui/Label
- * - MetricsCard.jsx
- * - WeatherCard.jsx
- *
- * @relatedFiles
- * - Projects.jsx
- * - projectUtils.js
- */
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Progress } from '@/components/ui/Progress';
@@ -34,6 +15,7 @@ import {
   calculateElapsedTime,
   formatCurrency,
   formatDate,
+  getStatusText,
 } from '@/utils/projectUtils';
 
 function Overview({
@@ -44,26 +26,31 @@ function Overview({
   weatherError,
   onEditDetails,
 }) {
+  if (!project) return null;
+
   return (
     <div className="space-y-6">
       {/* Métricas principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <ProgressMetricsCard
           title="Progresso Geral"
-          value={`${project.progress}%`}
+          value={`${project?.progress || 0}%`}
         />
 
         <BudgetMetricsCard
           title="Orçamento Utilizado"
-          value={`${((project.spent / project.budget) * 100).toFixed(1)}%`}
+          value={`${((project?.spent || 0) / (project?.budget || 1) * 100).toFixed(1)}%`}
         />
 
         <TimeMetricsCard
           title="Tempo Decorrido"
-          value={`${calculateElapsedTime(project)}%`}
+          value={`${calculateElapsedTime(project) || 0}%`}
         />
 
-        <StatusMetricsCard title="Status" value={project.status} />
+        <StatusMetricsCard 
+          title="Status" 
+          value={getStatusText(project?.status)}
+        />
 
         {/* Card do Clima */}
         {weatherLoading ? (
@@ -97,46 +84,46 @@ function Overview({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Nome da Obra</Label>
-                <p className="text-gray-700">{project.name}</p>
+                <p className="text-gray-700">{project?.name}</p>
               </div>
               <div>
                 <Label>Endereço</Label>
-                <p className="text-gray-700">{project.address}</p>
+                <p className="text-gray-700">{project?.address}</p>
               </div>
               <div>
                 <Label>Descrição do Projeto</Label>
-                <p className="text-gray-700">{project.description}</p>
+                <p className="text-gray-700">{project?.description}</p>
               </div>
               <div>
                 <Label>Tipo de Construção</Label>
-                <p className="text-gray-700">{project.constructionType}</p>
+                <p className="text-gray-700">{project?.constructionType}</p>
               </div>
               <div>
                 <Label>Área Total</Label>
-                <p className="text-gray-700">{project.totalArea} m²</p>
+                <p className="text-gray-700">{project?.totalArea || 0} m²</p>
               </div>
               <div>
                 <Label>Unidades</Label>
-                <p className="text-gray-700">{project.numberOfUnits}</p>
+                <p className="text-gray-700">{project?.numberOfUnits || 0}</p>
               </div>
               <div>
                 <Label>Engenheiro Responsável</Label>
-                <p className="text-gray-700">{project.responsibleEngineer}</p>
+                <p className="text-gray-700">{project?.responsibleEngineer}</p>
               </div>
               <div>
                 <Label>Data de Início</Label>
-                <p className="text-gray-700">{formatDate(project.startDate)}</p>
+                <p className="text-gray-700">{project?.startDate ? formatDate(project.startDate) : 'Não definida'}</p>
               </div>
               <div>
                 <Label>Previsão de Término</Label>
                 <p className="text-gray-700">
-                  {formatDate(project.estimatedEndDate)}
+                  {project?.estimatedEndDate ? formatDate(project.estimatedEndDate) : 'Não definida'}
                 </p>
               </div>
               <div>
                 <Label>Orçamento Previsto</Label>
                 <p className="text-gray-700">
-                  {formatCurrency(project.budget)}
+                  {formatCurrency(project?.budget || 0)}
                 </p>
               </div>
             </div>
@@ -150,7 +137,7 @@ function Overview({
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {project.timeline.slice(0, 3).map((phase, index) => (
+              {project?.timeline?.slice(0, 3)?.map((phase, index) => (
                 <div key={index} className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
                   <div className="flex-1">
@@ -168,7 +155,7 @@ function Overview({
                 </div>
               ))}
 
-              {project.timeline.length === 0 && (
+              {(!project?.timeline || project.timeline.length === 0) && (
                 <p className="text-gray-500 text-center py-4">
                   Nenhuma fase registrada ainda.
                 </p>
