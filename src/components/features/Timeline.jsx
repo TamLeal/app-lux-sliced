@@ -23,7 +23,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Progress } from '@/components/ui/Progress';
 import { Button } from '@/components/ui/Button';
 import { Plus, Edit, Trash2, Clock, Calendar, CheckSquare } from 'lucide-react';
-import { calculatePhaseProgress } from '@/utils/projectUtils';
 
 function Timeline({
   phases,
@@ -158,24 +157,22 @@ function Timeline({
                     >
                       <div className="flex items-center">
                         <CheckSquare
-                          className={`h-4 w-4 mr-2 ${
-                            task.progress >= 80
-                              ? 'text-green-500'
-                              : task.progress >= 50
-                              ? 'text-yellow-500'
-                              : 'text-red-500'
+                          className={`h-4 w-4 mr-2 ${task.progress >= 80
+                            ? 'text-green-500'
+                            : task.progress >= 50
+                            ? 'text-yellow-500'
+                            : 'text-red-500'
                           }`}
                         />
                         <span className="text-sm">{task.name}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            task.progress >= 80
-                              ? 'bg-green-100 text-green-800'
-                              : task.progress >= 50
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
+                          className={`px-2 py-1 rounded-full text-xs ${task.progress >= 80
+                            ? 'bg-green-100 text-green-800'
+                            : task.progress >= 50
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
                           }`}
                         >
                           {task.progress}%

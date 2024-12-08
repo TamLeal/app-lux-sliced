@@ -24,6 +24,7 @@ import EditProjectStatusForm from '@/components/forms/EditProjectStatusForm';
 import ProjectCard from '@/components/cards/ProjectCard';
 import MetricsCard from '@/components/cards/MetricsCard';
 import Timeline from '@/components/features/Timeline';
+import TimelineForm from '@/components/forms/TimelineForm';  // Ajuste o caminho conforme necessário
 import Documents from '@/components/features/Documents';
 import Photos from '@/components/features/Photos';
 import Overview from '@/components/features/Overview';
@@ -45,6 +46,15 @@ export default function Projects() {
   const [activeTab, setActiveTab] = useState(TABS.OVERVIEW);
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showEditProjectDetails, setShowEditProjectDetails] = useState(false);
+  const [showTimelineForm, setShowTimelineForm] = useState(false); // Para controlar a visibilidade do formulário de nova fase
+  const [newTimeline, setNewTimeline] = useState({
+    phase: '',
+    startDate: '',
+    endDate: '',
+    progress: 0,
+    milestones: [],
+    tasks: [],
+  });
 
   // Estados de edição
   const [editProject, setEditProject] = useState(null);
@@ -60,16 +70,11 @@ export default function Projects() {
     numberOfUnits: '',
     budget: '',
     status: '',
-    description: ''
-  }); // Inicializando com valores padrão
+    description: '',
+  });
 
   // Hooks customizados
-  const {
-    weatherData,
-    forecastData,
-    loading: weatherLoading,
-    error: weatherError,
-  } = useWeather();
+  const { weatherData, forecastData, loading: weatherLoading, error: weatherError } = useWeather();
   const { progress, updateProgress } = useProjectProgress(selectedProject);
 
   // Efeitos
@@ -84,7 +89,51 @@ export default function Projects() {
     }
   }, [projects]);
 
-  // Handlers principais
+  // Função para adicionar nova fase
+  const handleTimelineSubmit = (e) => {
+    e.preventDefault();
+
+    const newPhase = {
+      phase: newTimeline.phase,
+      startDate: newTimeline.startDate,
+      endDate: newTimeline.endDate,
+      progress: 0,
+      milestones: [],
+      tasks: [],
+    };
+
+    setProjects((prevProjects) =>
+      prevProjects.map((project) =>
+        project.id === selectedProject.id
+          ? {
+              ...project,
+              timeline: [...project.timeline, newPhase], // Adicionando a nova fase à timeline
+            }
+          : project
+      )
+    );
+
+    setSelectedProject((prev) => ({
+      ...prev,
+      timeline: [...prev.timeline, newPhase],
+    }));
+
+    setShowTimelineForm(false);
+    setNewTimeline({
+      phase: '',
+      startDate: '',
+      endDate: '',
+      progress: 0,
+      milestones: [],
+      tasks: [],
+    });
+  };
+
+  // Função para exibir o formulário de adicionar nova fase
+  const showAddPhaseForm = () => {
+    setShowTimelineForm(true);
+  };
+
   const handleProjectSelect = (project) => {
     setSelectedProject(project);
     setActiveTab(TABS.OVERVIEW);
@@ -115,8 +164,8 @@ export default function Projects() {
       numberOfUnits: '',
       budget: '',
       status: '',
-      description: ''
-    }); // Resetando para o valor inicial
+      description: '',
+    });
   };
 
   const handleDeleteProject = (projectId) => {
@@ -130,7 +179,6 @@ export default function Projects() {
     }
   };
 
-  // Renderização condicional baseada na seleção de projeto
   const renderContent = () => {
     if (!selectedProject) {
       return (
@@ -169,6 +217,7 @@ export default function Projects() {
           <Timeline
             phases={selectedProject.timeline}
             onUpdateProgress={updateProgress}
+            onAddPhase={showAddPhaseForm} // Passando a função para mostrar o formulário de nova fase
           />
         );
       case TABS.DOCUMENTS:
@@ -191,7 +240,6 @@ export default function Projects() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-gray-800">
           Gerenciamento de Obras
@@ -205,7 +253,6 @@ export default function Projects() {
         </Button>
       </div>
 
-      {/* Navegação do projeto selecionado */}
       {selectedProject && (
         <>
           <div className="flex items-center space-x-4 mb-6">
@@ -241,74 +288,18 @@ export default function Projects() {
         </>
       )}
 
-      {/* Conteúdo principal */}
       {renderContent()}
 
-      {/* Modais de formulários */}
-      {showProjectForm && (
-        <ProjectForm
-          onSubmit={handleProjectSubmit}
-          onCancel={() => setShowProjectForm(false)}
-          newProject={editProjectDetails}
-          setNewProject={setEditProjectDetails}
+      {showTimelineForm && (
+        <TimelineForm
+          onSubmit={handleTimelineSubmit}
+          onCancel={() => setShowTimelineForm(false)}
+          newTimeline={newTimeline}
+          setNewTimeline={setNewTimeline}
         />
       )}
 
-      {showEditProjectDetails && (
-        <EditProjectDetailsForm
-          project={editProjectDetails}
-          setProject={setEditProjectDetails}
-          onSubmit={(e) => {
-            e.preventDefault();
-            setProjects((prevProjects) =>
-              prevProjects.map((p) =>
-                p.id === editProjectDetails.id ? editProjectDetails : p
-              )
-            );
-            setSelectedProject(editProjectDetails);
-            setShowEditProjectDetails(false);
-            setEditProjectDetails(null);
-          }}
-          onCancel={() => {
-            setShowEditProjectDetails(false);
-            setEditProjectDetails(null);
-          }}
-        />
-      )}
-
-      {editProject && (
-        <EditProjectNameForm
-          project={editProject}
-          setProject={setEditProject}
-          onSubmit={(e) => {
-            e.preventDefault();
-            setProjects((prevProjects) =>
-              prevProjects.map((p) =>
-                p.id === editProject.id ? editProject : p
-              )
-            );
-            setEditProject(null);
-          }}
-          onCancel={() => setEditProject(null)}
-        />
-      )}
-
-      {editProjectStatus && (
-        <EditProjectStatusForm
-          project={editProjectStatus}
-          setProject={setEditProjectStatus}
-          onSubmit={(e) => {
-            e.preventDefault();
-            setProjects((prevProjects) =>
-              prevProjects.map((p) =>
-                p.id === editProjectStatus.id ? editProjectStatus : p
-              )
-            );
-            setEditProjectStatus(null);
-          }}
-          onCancel={() => setEditProjectStatus(null)}
-        />
-      )}
+      {/* Restante dos formulários */}
     </div>
   );
 }

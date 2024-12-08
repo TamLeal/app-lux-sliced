@@ -30,6 +30,7 @@ function TimelineForm({ onSubmit, onCancel, newTimeline, setNewTimeline }) {
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
+            {/* Campo Nome da Fase */}
             <div>
               <Label htmlFor="phase">Nome da Fase</Label>
               <Input
@@ -39,8 +40,11 @@ function TimelineForm({ onSubmit, onCancel, newTimeline, setNewTimeline }) {
                   setNewTimeline({ ...newTimeline, phase: e.target.value })
                 }
                 required
+                placeholder="Digite o nome da fase"
               />
             </div>
+
+            {/* Campo Data de Início e Término */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="startDate">Data de Início</Label>
@@ -71,6 +75,7 @@ function TimelineForm({ onSubmit, onCancel, newTimeline, setNewTimeline }) {
               </div>
             </div>
 
+            {/* Botões de Cancelar e Salvar */}
             <div className="flex justify-end space-x-4">
               <Button
                 type="button"
