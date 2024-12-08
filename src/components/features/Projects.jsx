@@ -7,6 +7,8 @@ import ProjectForm from '@/components/forms/ProjectForm';
 import EditProjectDetailsForm from '@/components/forms/EditProjectDetailsForm';
 import EditProjectNameForm from '@/components/forms/EditProjectNameForm';
 import EditProjectStatusForm from '@/components/forms/EditProjectStatusForm';
+import MilestoneForm from '@/components/forms/MilestoneForm';
+import TaskForm from '@/components/forms/TaskForm';
 
 // Importação de componentes de visualização
 import ProjectCard from '@/components/cards/ProjectCard';
@@ -38,7 +40,23 @@ export default function Projects() {
   const [editProject, setEditProject] = useState(null);
   const [editProjectStatus, setEditProjectStatus] = useState(null);
 
-  // Estado do novo projeto e timeline
+  // Estados para marcos e tarefas
+  const [showMilestoneForm, setShowMilestoneForm] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [editingPhaseIndex, setEditingPhaseIndex] = useState(null);
+  const [newMilestone, setNewMilestone] = useState({
+    id: null,
+    description: '',
+    date: new Date().toISOString().split('T')[0],
+  });
+  const [newTask, setNewTask] = useState({
+    id: null,
+    name: '',
+    status: 'pending',
+    progress: 0,
+  });
+
+  // Estado para novo projeto e timeline
   const [editProjectDetails, setEditProjectDetails] = useState({
     name: '',
     constructionType: '',
@@ -197,6 +215,102 @@ export default function Projects() {
             phases={selectedProject.timeline || []}
             onUpdateProgress={updateProgress}
             onAddPhase={() => setShowTimelineForm(true)}
+            onEditPhase={(phaseIndex) => {
+              const phase = selectedProject.timeline[phaseIndex];
+              setEditProjectDetails(phase);
+              setShowTimelineForm(true);
+            }}
+            onRemovePhase={(phaseIndex) => {
+              if (window.confirm('Tem certeza que deseja remover esta fase?')) {
+                setProjects((prevProjects) =>
+                  prevProjects.map((p) =>
+                    p.id === selectedProject.id
+                      ? {
+                          ...p,
+                          timeline: p.timeline.filter((_, idx) => idx !== phaseIndex),
+                        }
+                      : p
+                  )
+                );
+              }
+            }}
+            onAddMilestone={(phaseIndex) => {
+              setEditingPhaseIndex(phaseIndex);
+              setNewMilestone({
+                id: null,
+                description: '',
+                date: new Date().toISOString().split('T')[0],
+              });
+              setShowMilestoneForm(true);
+            }}
+            onEditMilestone={(phaseIndex, milestoneId) => {
+              const milestone = selectedProject.timeline[phaseIndex].milestones.find(
+                (m) => m.id === milestoneId
+              );
+              setEditingPhaseIndex(phaseIndex);
+              setNewMilestone({ ...milestone });
+              setShowMilestoneForm(true);
+            }}
+            onRemoveMilestone={(phaseIndex, milestoneId) => {
+              if (window.confirm('Tem certeza que deseja remover este marco?')) {
+                setProjects((prevProjects) =>
+                  prevProjects.map((p) =>
+                    p.id === selectedProject.id
+                      ? {
+                          ...p,
+                          timeline: p.timeline.map((phase, idx) =>
+                            idx === phaseIndex
+                              ? {
+                                  ...phase,
+                                  milestones: phase.milestones.filter((m) => m.id !== milestoneId),
+                                }
+                              : phase
+                          ),
+                        }
+                      : p
+                  )
+                );
+              }
+            }}
+            onAddTask={(phaseIndex) => {
+              setEditingPhaseIndex(phaseIndex);
+              setNewTask({
+                id: null,
+                name: '',
+                status: 'pending',
+                progress: 0,
+              });
+              setShowTaskForm(true);
+            }}
+            onEditTask={(phaseIndex, taskId) => {
+              const task = selectedProject.timeline[phaseIndex].tasks.find(
+                (t) => t.id === taskId
+              );
+              setEditingPhaseIndex(phaseIndex);
+              setNewTask({ ...task });
+              setShowTaskForm(true);
+            }}
+            onRemoveTask={(phaseIndex, taskId) => {
+              if (window.confirm('Tem certeza que deseja remover esta tarefa?')) {
+                setProjects((prevProjects) =>
+                  prevProjects.map((p) =>
+                    p.id === selectedProject.id
+                      ? {
+                          ...p,
+                          timeline: p.timeline.map((phase, idx) =>
+                            idx === phaseIndex
+                              ? {
+                                  ...phase,
+                                  tasks: phase.tasks.filter((t) => t.id !== taskId),
+                                }
+                              : phase
+                          ),
+                        }
+                      : p
+                  )
+                );
+              }
+            }}
           />
         );
       case TABS.DOCUMENTS:
@@ -332,6 +446,82 @@ export default function Projects() {
           onCancel={() => setEditProjectStatus(null)}
         />
       )}
-    </div>
-  );
+
+      {showMilestoneForm && (
+        <MilestoneForm
+          onSubmit={(e) => {
+            e.preventDefault();
+            const updatedMilestone = {
+              ...newMilestone,
+              id: newMilestone.id || Date.now(),
+            };
+
+            setProjects((prevProjects) =>
+              prevProjects.map((p) =>
+                p.id === selectedProject.id
+                  ? {
+                      ...p,
+                      timeline: p.timeline.map((phase, idx) =>
+                        idx === editingPhaseIndex
+                          ? {
+                              ...phase,
+                              milestones: newMilestone.id
+                                ? phase.milestones.map((m) =>
+                                m.id === newMilestone.id ? updatedMilestone : m
+                                )
+                              : [...(phase.milestones || []), updatedMilestone],
+                          }
+                        : phase
+                    ),
+                  }
+                : p
+            )
+          );
+          setShowMilestoneForm(false);
+        }}
+        onCancel={() => setShowMilestoneForm(false)}
+        newMilestone={newMilestone}
+        setNewMilestone={setNewMilestone}
+      />
+    )}
+
+    {showTaskForm && (
+      <TaskForm
+        onSubmit={(e) => {
+          e.preventDefault();
+          const updatedTask = {
+            ...newTask,
+            id: newTask.id || Date.now(),
+          };
+
+          setProjects((prevProjects) =>
+            prevProjects.map((p) =>
+              p.id === selectedProject.id
+                ? {
+                    ...p,
+                    timeline: p.timeline.map((phase, idx) =>
+                      idx === editingPhaseIndex
+                        ? {
+                            ...phase,
+                            tasks: newTask.id
+                              ? phase.tasks.map((t) =>
+                                  t.id === newTask.id ? updatedTask : t
+                                )
+                              : [...(phase.tasks || []), updatedTask],
+                          }
+                        : phase
+                    ),
+                  }
+                : p
+            )
+          );
+          setShowTaskForm(false);
+        }}
+        onCancel={() => setShowTaskForm(false)}
+        newTask={newTask}
+        setNewTask={setNewTask}
+      />
+    )}
+  </div>
+);
 }
