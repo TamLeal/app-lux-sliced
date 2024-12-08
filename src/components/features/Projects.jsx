@@ -49,7 +49,19 @@ export default function Projects() {
   // Estados de edição
   const [editProject, setEditProject] = useState(null);
   const [editProjectStatus, setEditProjectStatus] = useState(null);
-  const [editProjectDetails, setEditProjectDetails] = useState(null);
+  const [editProjectDetails, setEditProjectDetails] = useState({
+    name: '',
+    constructionType: '',
+    address: '',
+    responsibleEngineer: '',
+    startDate: '',
+    estimatedEndDate: '',
+    totalArea: '',
+    numberOfUnits: '',
+    budget: '',
+    status: '',
+    description: ''
+  }); // Inicializando com valores padrão
 
   // Hooks customizados
   const {
@@ -92,7 +104,19 @@ export default function Projects() {
 
     setProjects((prev) => [...prev, projectToAdd]);
     setShowProjectForm(false);
-    setEditProjectDetails(null);
+    setEditProjectDetails({
+      name: '',
+      constructionType: '',
+      address: '',
+      responsibleEngineer: '',
+      startDate: '',
+      estimatedEndDate: '',
+      totalArea: '',
+      numberOfUnits: '',
+      budget: '',
+      status: '',
+      description: ''
+    }); // Resetando para o valor inicial
   };
 
   const handleDeleteProject = (projectId) => {

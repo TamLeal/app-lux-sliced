@@ -23,6 +23,21 @@ import { Button } from '@/components/ui/Button';
 import { constructionTypes, projectStatuses } from '@/utils/constants';
 
 function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
+  // Garantir que newProject sempre tenha valores válidos
+  const safeNewProject = newProject || {
+    name: '',
+    constructionType: '',
+    address: '',
+    responsibleEngineer: '',
+    startDate: '',
+    estimatedEndDate: '',
+    totalArea: '',
+    numberOfUnits: '',
+    budget: '',
+    status: '',
+    description: ''
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center">
       <Card className="w-full max-w-2xl h-fit max-h-[90vh] overflow-y-auto bg-white shadow-lg">
@@ -36,9 +51,9 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 <Label htmlFor="name">Nome da Obra</Label>
                 <Input
                   id="name"
-                  value={newProject.name}
+                  value={safeNewProject.name}
                   onChange={(e) =>
-                    setNewProject({ ...newProject, name: e.target.value })
+                    setNewProject({ ...safeNewProject, name: e.target.value })
                   }
                   required
                 />
@@ -48,10 +63,10 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 <Label htmlFor="constructionType">Tipo de Construção</Label>
                 <select
                   id="constructionType"
-                  value={newProject.constructionType}
+                  value={safeNewProject.constructionType}
                   onChange={(e) =>
                     setNewProject({
-                      ...newProject,
+                      ...safeNewProject,
                       constructionType: e.target.value,
                     })
                   }
@@ -71,9 +86,9 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 <Label htmlFor="address">Endereço</Label>
                 <Input
                   id="address"
-                  value={newProject.address}
+                  value={safeNewProject.address}
                   onChange={(e) =>
-                    setNewProject({ ...newProject, address: e.target.value })
+                    setNewProject({ ...safeNewProject, address: e.target.value })
                   }
                   required
                 />
@@ -85,10 +100,10 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 </Label>
                 <Input
                   id="responsibleEngineer"
-                  value={newProject.responsibleEngineer}
+                  value={safeNewProject.responsibleEngineer}
                   onChange={(e) =>
                     setNewProject({
-                      ...newProject,
+                      ...safeNewProject,
                       responsibleEngineer: e.target.value,
                     })
                   }
@@ -101,9 +116,9 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 <Input
                   id="startDate"
                   type="date"
-                  value={newProject.startDate}
+                  value={safeNewProject.startDate}
                   onChange={(e) =>
-                    setNewProject({ ...newProject, startDate: e.target.value })
+                    setNewProject({ ...safeNewProject, startDate: e.target.value })
                   }
                   required
                 />
@@ -114,10 +129,10 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 <Input
                   id="estimatedEndDate"
                   type="date"
-                  value={newProject.estimatedEndDate}
+                  value={safeNewProject.estimatedEndDate}
                   onChange={(e) =>
                     setNewProject({
-                      ...newProject,
+                      ...safeNewProject,
                       estimatedEndDate: e.target.value,
                     })
                   }
@@ -130,9 +145,9 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 <Input
                   id="totalArea"
                   type="number"
-                  value={newProject.totalArea}
+                  value={safeNewProject.totalArea}
                   onChange={(e) =>
-                    setNewProject({ ...newProject, totalArea: e.target.value })
+                    setNewProject({ ...safeNewProject, totalArea: e.target.value })
                   }
                   required
                 />
@@ -143,10 +158,10 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 <Input
                   id="numberOfUnits"
                   type="number"
-                  value={newProject.numberOfUnits}
+                  value={safeNewProject.numberOfUnits}
                   onChange={(e) =>
                     setNewProject({
-                      ...newProject,
+                      ...safeNewProject,
                       numberOfUnits: e.target.value,
                     })
                   }
@@ -159,9 +174,9 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 <Input
                   id="budget"
                   type="number"
-                  value={newProject.budget}
+                  value={safeNewProject.budget}
                   onChange={(e) =>
-                    setNewProject({ ...newProject, budget: e.target.value })
+                    setNewProject({ ...safeNewProject, budget: e.target.value })
                   }
                   required
                 />
@@ -171,9 +186,9 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
                 <Label htmlFor="status">Status</Label>
                 <select
                   id="status"
-                  value={newProject.status}
+                  value={safeNewProject.status}
                   onChange={(e) =>
-                    setNewProject({ ...newProject, status: e.target.value })
+                    setNewProject({ ...safeNewProject, status: e.target.value })
                   }
                   className="w-full border border-gray-300 rounded px-2 py-1"
                   required
@@ -191,9 +206,9 @@ function ProjectForm({ onSubmit, onCancel, newProject, setNewProject }) {
               <Label htmlFor="description">Descrição do Projeto</Label>
               <textarea
                 id="description"
-                value={newProject.description}
+                value={safeNewProject.description}
                 onChange={(e) =>
-                  setNewProject({ ...newProject, description: e.target.value })
+                  setNewProject({ ...safeNewProject, description: e.target.value })
                 }
                 className="w-full border border-gray-300 rounded px-2 py-1 h-32"
                 required

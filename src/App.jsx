@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CalendarDays,
   DollarSign,
@@ -57,7 +57,6 @@ const initialData = {
     },
   ],
   projects: [
-    // Alterado de team para projects
     {
       id: 1,
       name: 'Edifício Horizonte',
@@ -90,37 +89,66 @@ const initialData = {
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [materials, setMaterials] = useState([]);
+  const [visits, setVisits] = useState([]);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+
+  // Carrega os dados do localStorage ou usa dados padrão (initialData)
+  useEffect(() => {
+    const loadData = () => {
+      const savedProjects = localStorage.getItem('projects');
+      const savedMaterials = localStorage.getItem('materials');
+      const savedVisits = localStorage.getItem('visits');
+
+      // Verifica se há dados salvos no localStorage ou usa os dados iniciais
+      setProjects(savedProjects ? JSON.parse(savedProjects) : initialData.projects);
+      setMaterials(savedMaterials ? JSON.parse(savedMaterials) : initialData.materials);
+      setVisits(savedVisits ? JSON.parse(savedVisits) : initialData.materials);
+
+      setInitialDataLoaded(true); // Após carregar os dados, marca como carregado
+    };
+
+    loadData();
+  }, []);
+
+  // Atualiza o localStorage sempre que algum dado for alterado
+  useEffect(() => {
+    if (initialDataLoaded) {
+      localStorage.setItem('projects', JSON.stringify(projects));
+      localStorage.setItem('materials', JSON.stringify(materials));
+      localStorage.setItem('visits', JSON.stringify(visits));
+    }
+  }, [projects, materials, visits, initialDataLoaded]);
 
   const renderContent = () => {
+    const data = { projects, materials, visits }; // Passa todos os dados necessários
+
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard data={initialData} />;
+        return <Dashboard data={data} />;
       case 'visits':
-        return <Visits data={initialData} />;
+        return <Visits data={data} />;
       case 'projects':
-        return <Projects data={initialData} />;
+        return <Projects data={data} />;
       case 'materials':
-        return <Materials data={initialData} />;
+        return <Materials data={data} />;
       case 'reports':
-        return <Reports data={initialData} />;
+        return <Reports data={data} />;
       case 'finance':
-        return <FinancialManagement data={initialData} />;
+        return <FinancialManagement data={data} />;
       default:
-        return <Dashboard data={initialData} />;
+        return <Dashboard data={data} />;
     }
   };
+
   const menuItems = [
     { icon: Home, label: 'Dashboard', id: 'dashboard', color: '#64B5F6' },
     { icon: Building, label: 'Obras', id: 'projects', color: '#FF6B6B' },
     { icon: CalendarDays, label: 'Visitas', id: 'visits', color: '#4CAF50' },
     { icon: Package, label: 'Materiais', id: 'materials', color: '#FFB300' },
     { icon: LineChart, label: 'Relatórios', id: 'reports', color: '#FF7043' },
-    {
-      icon: DollarSign,
-      label: 'Gestão Financeira',
-      id: 'finance',
-      color: '#9C27B0',
-    },
+    { icon: DollarSign, label: 'Gestão Financeira', id: 'finance', color: '#9C27B0' },
   ];
 
   return (
